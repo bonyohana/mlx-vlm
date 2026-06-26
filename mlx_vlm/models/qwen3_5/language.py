@@ -2019,8 +2019,12 @@ class LanguageModel(nn.Module):
                     for bi, ve in enumerate(valid_ends_list):
                         start = verify_start + ve
                         if start < kv_len:
-                            c.keys[bi, :, start:kv_len, :] = 0
-                            c.values[bi, :, start:kv_len, :] = 0
+                            zero_row_tail = getattr(c, "zero_row_tail", None)
+                            if callable(zero_row_tail):
+                                zero_row_tail(bi, start, kv_len)
+                            else:
+                                c.keys[bi, :, start:kv_len, :] = 0
+                                c.values[bi, :, start:kv_len, :] = 0
             else:
                 ssm_caches.append(c)
 
